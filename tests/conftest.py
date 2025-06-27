@@ -1,10 +1,12 @@
+import os
+
 import pytest
 from selene import browser
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selene import Browser, Config
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 from tests.utils import attach
 
 DEFAULT_BROWSER_VERSION = "128.0"
@@ -14,7 +16,9 @@ def pytest_addoption(parser):
         default='128.0'
     )
 
-
+@pytest.fixture(scope='session', autouse=True)
+def load_env():
+    load_dotenv()
 
 
 @pytest.fixture(scope='function', autouse=True)
@@ -33,9 +37,12 @@ def setup_browser(request):
         },
         "goog:loggingPrefs": {"browser": "ALL"}
     }
+    login = os.getenv('LOGIN')
+    password = os.getenv('PASSWORD')
+    url = os.getenv('URL')
     options.capabilities.update(selenoid_capabilities)
     driver = webdriver.Remote(
-        command_executor="https://user1:1234@selenoid.autotests.cloud/wd/hub",
+        command_executor=f"https://{login}:{password}@{url}",
         options=options
     )
     browser.config.driver = driver
